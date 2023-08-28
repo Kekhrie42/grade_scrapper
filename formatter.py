@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import random
 #Author: Kekhrie Tsurho
 
 def main():
@@ -63,11 +64,13 @@ def create_output_file(df, numpy_array):
 
 def extract_student_data(df, row):
         # Extract the meta-data, name, SID, status, and 6-Digit ID
+        random_number = random.randint(100000, 999999)
         status = 'C'
         name = row['Name'].split(' ')
         last_name = name[-1]
         first_middle_names = ' '.join(name[:-1])
-        meta_data = f"{last_name}, {first_middle_names},  {row['SID']}, C"
+        meta_data = f"{last_name.ljust(20)}, {first_middle_names.ljust(20)}, {str(row['SID']).ljust(20)},{status}, {str(random_number)}"
+
         
         # Extract 'Background Survey' and adjust based on requirements
         if not pd.isna(row['Background Survey']) and row['Background Survey'] == 0.0:
