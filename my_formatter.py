@@ -1,24 +1,146 @@
+"""
+Grade Management System for CSc 144, Fall 2023
+
+This module provides functionalities for managing and processing student grades for CSc 144.
+It supports reading grades from CSV files, merging grade data, handling exceptions for late submissions,
+and aggregating quiz scores.
+
+Functions:
+    main(): The main function to run the grade management system.
+    add_to_exceptions(): Adds students to an exception list for late homework submissions.
+    aggregate_quizzes(initial_file, lowest_n, df): Aggregates quiz scores, dropping the lowest n scores.
+    create_merged_file(df, filename, initial_file): Merges grade data from different sources.
+    merge_data(df, existing_data): Helper function to merge data from a DataFrame and a text file.
+    populate_scores(dict_scores, scores): Populates the scores for the merged data.
+    populate_quizzes(dict_scores, scores, df): Populates quiz scores in the merged data.
+    populate_homeworks(dict_scores, scores, df, start): Populates homework scores in the merged data.
+    populate_exams(dict_scores, scores, df, start): Populates exam scores in the merged data.
+    number_of_quizzes(df): Counts the number of quizzes based on DataFrame columns.
+    number_of_homeworks(df): Counts the number of homeworks based on DataFrame columns.
+    number_of_exams(df): Counts the number of exams based on DataFrame columns.
+    number_of_final_exam(df): Checks if there's a final exam based on DataFrame columns.
+    expected_scores_count(df): Counts the expected number of scores based on DataFrame columns.
+    read_csv_file(csv_file): Reads a CSV file and returns a DataFrame and a NumPy array.
+    create_output_file(df, filename, merge_mode=False): Creates an output file with student grade data.
+    write_metadata_to_file(df, file): Writes metadata to the output file.
+    extract_student_data(df, row): Extracts and formats student data for the output file.
+
+Variables:
+    exceptions (dict): Dictionary of students exempt from late homework penalties.
+
+Author:
+    Kekhrie Tsurho
+"""
+
 import numpy as np
 import pandas as pd
 import random
 import re
-#Author: Kekhrie Tsurho
+import math
+from datetime import datetime, timedelta
+
+
+# Exception dictionary, if a student is exempt from submitting their homework late without incurring any penalties.
+exceptions = {
+    'Homework #3': ['tubanks@arizona.edu'],
+    'Homework #4': ['iatouf@arizona.edu'], 
+    'Homework #6': ['hacube@arizona.edu']
+}
 
 def main():
     
     #Modes: Initial Mode, Merge Mode.
     input_mode = input("Enter the mode: ")
     if input_mode == "-i":
-        csv_file = "CSc_144_Fall_2023_grades.csv"
+        csv_file = "CSc_144_Fall_2023_grades.csv" #csv file to read
         df, numpy_array = read_csv_file(csv_file) # read csv file function call
         file = create_output_file(df, "output.txt") #Manipulate the data and create output file
 
     elif input_mode == "-m":
-        initial_file = "output.txt"
-        csv_file = "CSc_144_Fall_2023_grades_latest.csv"
+        initial_file = "merged.txt" #initial file to merge with
+        csv_file = "CSc_144_Fall_2023_grades_final_exam.csv" #csv file to read and merge
         df, numpy_array = read_csv_file(csv_file) # read csv file function call
-        create_merged_file(df, "merged.txt", initial_file)
-    
+        create_merged_file(df, "mergedFinal.txt", initial_file)
+
+    ##Not completed, 
+    #TODO
+    elif input_mode == "-e":
+        add_to_exceptions()
+
+    elif input_mode == "-a":
+        lowest_n = 4
+        initial_file = "mergedFinal.txt" #initial file to merge with
+        csv_file = "CSc_144_Fall_2023_grades_final_exam.csv" #csv file to read and merge
+        df, numpy_array = read_csv_file(csv_file) # read csv file function call
+        aggregate_quizzes(initial_file, lowest_n, df)
+
+def add_to_exceptions():
+    # Add to exceptions dictionary
+    while True:
+        homework = input("Enter the homework number: ")
+        if homework == 'q':
+            break
+        email = input("Enter the email: ")
+        if email == 'q':
+            break
+        if homework in exceptions:
+            exceptions[homework].append(email)
+        else:
+            exceptions[homework] = [email]
+    print(exceptions)
+
+def aggregate_quizzes(initial_file, lowest_n, df):
+    with open(initial_file, 'r') as file:
+        lines = file.readlines()
+
+    # Identify the line that contains quiz labels
+    quiz_labels = [label for label in lines if 'AssignmentLabels' in label][0]
+    quiz_indices = [i for i, label in enumerate(quiz_labels.split(',')) if 'QUIZ' in label and label != 'QUIZ0']
+    # print(quiz_indices, quiz_labels)
+
+    # Process each student's scores
+    updated_lines = []
+    scores_section = False
+
+    for line in lines:
+        if 'ScoresListHere' in line:
+            scores_section = True
+            updated_lines.append(line)
+            continue
+
+        if scores_section:
+
+            if all(x.isdigit() or x.isspace() or x == ',' for x in line):
+                scores = line.split()
+                end_index = 3 + number_of_quizzes(df)
+                quiz_scores = [int(scores[i]) for i in range(3, end_index) if int(scores[i]) <= 10]
+                quiz_scores.sort(reverse=True)  # Sort scores in descending order
+
+                # Drop the n lowest scores
+                quiz_scores = quiz_scores[:len(quiz_scores) - lowest_n]
+
+                # Update the quiz scores in the original data
+                updated_quiz_score = sum(quiz_scores)
+                for i in sorted(quiz_indices, reverse=True):
+                    del scores[i]  # Remove individual quiz scores
+                scores.insert(quiz_indices[0], str(updated_quiz_score))
+                
+                updated_line = ' '.join(scores)
+                updated_lines.append(updated_line+"\n")
+            else:
+                # Non-score lines are added as is (Homework and Exams)
+                updated_lines.append(line)
+        else:
+            # Lines outside the scores section are added as is (Initial ones before quiz labels)
+            updated_lines.append(line)
+
+    # Write the concatenated scores to a new file
+    with open('mergedQ.txt', 'w') as out_file:
+        for score in updated_lines:
+            out_file.write(score)
+
+
+
 def create_merged_file(df, filename, initial_file):
 
     # Read the existing file data (assuming it's a text file with a specific format)
@@ -39,8 +161,6 @@ def create_merged_file(df, filename, initial_file):
         file.write('\n')
 
         write_metadata_to_file(df,file)
-        #For Fall 2023
-        #file.write('AssignmentDueDay:-N/A-,08/21,09/01,??/??,??/??,??/??,??/??,09/08,09/15,10/06,10/13,11/03,11/10,12/01,09/22,10/20,11/17\n')
 
         file.write('StudentFamilyName,')
         file.write('StudentGivenName,')
@@ -56,10 +176,10 @@ def create_merged_file(df, filename, initial_file):
         for line in merged_data_lines:
             file.write(line)
 
-        
 def merge_data(df, existing_data):
     merged_data = []
     start_merging = False
+    late_threshold = timedelta(minutes=6) ##Late day time threshold
 
     for idx, line in enumerate(existing_data):
         if 'ScoresListHere' in line:
@@ -90,15 +210,9 @@ def merge_data(df, existing_data):
                         else:
                             background_survey = '0'
 
-                        #Late days
+                        data_points = [background_survey]
+                    
                         late_days = 3
-                        for i in range(1, 8):
-                            lateness_column = f'Homework #{i} - Lateness (H:M:S)'
-                            if lateness_column in df.columns and row[lateness_column] != "00:00:00":
-                                late_days -= 1
-
-                        late_days = max(0, late_days)
-                        data_points = [str(late_days), background_survey]
 
                         #Practice Quiz
                         if 'Quiz #0 (Practice Quiz)' in df.columns:
@@ -108,19 +222,49 @@ def merge_data(df, existing_data):
                         for i in range(14):
                             quiz_column = f'Quiz #{i}'
                             if any(quiz_column + version in df.columns for version in ['A', 'B', 'C', 'D', '']):
-                                scores = [int(row[quiz_column + version]) for version in ['A', 'B', 'C', 'D', ''] if quiz_column + version in df.columns and not pd.isna(row[quiz_column + version])]
-                                max_score = max(scores, default=0)
-                                data_points.append(str(max_score).rjust(max_width))
-                        
+                               scores = [int(row[quiz_column + version]) for version in ['A', 'B', 'C', 'D', ''] if quiz_column + version in df.columns and not pd.isna(row[quiz_column + version])]                               
+                               max_score = max(scores, default=0)
+                               data_points.append(str(max_score).rjust(max_width))
+                                
                         for i in range(1, 8):  # Homeworks
                             hw_column = f'Homework #{i}'
-                            # Case for late days, check properly
-                            if late_days == 0 and hw_column in df.columns:
-                                data_points.append('0') 
+                            lateness_column = f'Homework #{i} - Lateness (H:M:S)'
+                            if hw_column in df.columns and lateness_column in df.columns:
+                                lateness_str = row[lateness_column]
+                                lateness_parts = lateness_str.split(':')
+                                lateness_timedelta = timedelta(
+                                hours=int(lateness_parts[0]),
+                                minutes=int(lateness_parts[1]),
+                                seconds=int(lateness_parts[2])
+                            )
+                                is_late = lateness_timedelta >= late_threshold
                                 
-                            elif hw_column in df.columns:
-                                data_points.append(str(int(row[hw_column])).rjust(max_width) if not pd.isna(row[hw_column]) else '0'.rjust(max_width))
-                        
+                                # Check if the current student is exempted from this homework
+                                is_exempt = hw_column in exceptions and row['Email'] in exceptions[hw_column]
+                                
+                                # If homework is submitted and it's late
+                                if not pd.isna(row[hw_column]) and is_late and not is_exempt:
+                                    
+                                    # print("Late:", constructed_email, row["First Name"], row["Last Name"], lateness_str, hw_column)
+                                    # If they have used all their late days
+                                    if late_days == 0:
+                                        deducted_score = 50 - int(row[hw_column])
+                                        reduced_score = max(0, 38 - deducted_score)
+                                        data_points.append(str(int(reduced_score)).rjust(max_width))
+                                        # print("Grade Reduction", constructed_email, row["First Name"], row["Last Name"],lateness_str, hw_column)
+                                    
+                                    # Any other late submissions
+                                    else:
+                                        data_points.append(str(int(row[hw_column])).rjust(max_width))
+
+                                    late_days -= 1
+                                    late_days = max(0, late_days)
+                                # If homework is not submitted late or not submitted at all or is exempted
+                                else:
+                                    data_points.append(str(int(row[hw_column])).rjust(max_width) if not pd.isna(row[hw_column]) else '0'.rjust(max_width))
+
+                        data_points.insert(0,str(late_days))
+
                         for i in range(1, 4):  # Exams
                             exam_column = f'Exam #{i}'
                             if exam_column in df.columns:
@@ -138,26 +282,122 @@ def merge_data(df, existing_data):
                         scores_line = f"{scores_str}\n"
                         merged_data.append(scores_line)
 
-                        # print(data_points)
                 else:
-                    # If the student is not found in the new CSV file, just append the line without modification
-                    print(constructed_email)
-                    merged_data.append(line)
-                    if idx+1 < len(existing_data):  # Check if next line exists
-                        next_line = existing_data[idx+1]
-                        scores = next_line.strip().split()
-                        # Determine the missing scores count.
-                        total_expected_scores = expected_scores_count(df)
-                        missing_scores_count = total_expected_scores - len(scores)
-                        scores.extend(['0'] * missing_scores_count)
-                        merged_scores = ' '.join(scores)
-                        
-                        merged_data.append(f"{merged_scores}\n")
+                    print(constructed_email) ##All dropped students
 
+                    merged_data.append(line)
+                    if idx + 1 < len(existing_data):  # Check if next line exists
+                        next_line = existing_data[idx + 1]
+                        scores = next_line.strip().split()
+                        # print(scores)
+                        dict_scores = {'init':[],'quizzes':[], 'homeworks':[], 'exams':[]}
+                        dict_scores['init'] = scores[:3]
+                        total_expected_scores = expected_scores_count(df)
+                        
+
+                        last_quiz = populate_quizzes(dict_scores, scores, df)
+                        last_hw = populate_homeworks(dict_scores, scores, df, last_quiz+1)
+                       
+                        populate_exams(dict_scores, scores, df, last_hw)
+                        scores = populate_scores(dict_scores, scores)
+                        
+                        # Initialize formatted_scores list
+                        formatted_scores = []
+
+                        # Special handling to strip and format the first and second scores
+                        if scores:
+                            formatted_scores.append(scores[0].strip())  # Add the first score
+                            if len(scores) > 1:
+                                formatted_scores.append(scores[1].strip())  # Add the second score
+
+                        # Right-align the remaining scores
+                        for score in scores[2:]:
+                            formatted_scores.append(score.rjust(max_width))
+
+                        # Joining scores with a space
+                        formatted_score_line = ' '.join(formatted_scores)
+
+                        # Append the formatted score line to merged_data
+                        merged_data.append(formatted_score_line +  "\n"  )
+ 
             else:
             # If the line does not contain student information, just append the line without modification
                 line = line.strip() + "\n"
     return merged_data
+
+
+def populate_scores(dict_scores, scores):
+    scores = []
+    for key in dict_scores:
+        scores.extend(dict_scores[key])
+    return scores
+
+def populate_quizzes(dict_scores, scores, df):
+    last_quiz_index = 2  # Starting index for quizzes in the scores list
+    for i in range(number_of_quizzes(df)):
+        if last_quiz_index < len(scores) - 1 and int(scores[last_quiz_index + 1]) <= 10:
+            dict_scores['quizzes'].append(scores[last_quiz_index + 1])
+            last_quiz_index += 1
+        else:
+            dict_scores['quizzes'].append('0')
+    return last_quiz_index
+
+def populate_homeworks(dict_scores, scores, df, start):
+    # Score range for homeworks - assuming homework scores have a known range
+    homework_score_range = (0, 50)
+
+    # Populate homeworks
+    hw_count = 0
+    for i in range(start, len(scores)):
+        score = int(scores[i])
+        if homework_score_range[0] <= score <= homework_score_range[1]:
+            dict_scores['homeworks'].append(scores[i])
+            hw_count += 1
+        elif hw_count >= number_of_homeworks(df):
+            # Stop if we've added the expected number of homework scores
+            break
+
+    # Add '0' for any missing homeworks
+    for _ in range(number_of_homeworks(df) - hw_count):
+        dict_scores['homeworks'].append('0')
+    return start + hw_count
+
+def populate_exams(dict_scores, scores, df, start):
+    # Calculate the remaining space available for exam scores
+    current_length = len(dict_scores['init']) + len(dict_scores['quizzes']) + len(dict_scores['homeworks'])
+    remaining_length = expected_scores_count(df) - current_length
+
+    # Check if there is any space left for exam scores
+    if remaining_length > 0:
+        # Populate exams
+        exam_count = 0
+        for i in range(start, len(scores)):
+            if exam_count < remaining_length:
+                dict_scores['exams'].append(scores[i])
+                exam_count += 1
+            else:
+                break
+
+        # Fill in missing exam scores with '0'
+        while exam_count < min(number_of_exams(df), remaining_length):
+            dict_scores['exams'].append('0')
+            exam_count += 1
+
+
+def number_of_quizzes(df):
+    return sum(1 for i in range(14) if any(f'Quiz #{i}' + version in df.columns for version in ['A', 'B', 'C', 'D', '']))
+
+def number_of_homeworks(df):
+    return sum(1 for i in range(1, 8) if f'Homework #{i}' in df.columns)
+
+def number_of_exams(df):
+    return sum(1 for i in range(1, 4) if f'Exam #{i}' in df.columns)
+
+
+def number_of_final_exam(df):
+    return sum(1 if 'Final Exam' in df.columns else 0)
+
+
 
 def expected_scores_count(df):
     count = 3  # Background Survey, late days and quiz 0
@@ -232,12 +472,16 @@ def write_metadata_to_file(df, file):
         versions_found = [version for version in ['A', 'B', 'C', 'D', ''] if column_exists("Quiz", i, version)]
         if versions_found:
             if(i>=10):
-                labels.append(f'{i}{versions_found[0].ljust(5)}')
+                letter = chr(65 + i - 10)
+                label = f'QUIZ{letter}'
             else:
-                labels.append(f'QUIZ{i}')
-            points.append(str(quizPoints)) 
+                label = f'QUIZ{i}'
+
+            labels.append(label)
+            points.append(str(quizPoints))
             weights.append(str(quizWeight))
             duedays.append('-N/A-')  # Placeholder due day. Update accordingly.
+        
 
     
     # Check for Homeworks
