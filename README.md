@@ -17,6 +17,6 @@ pip install numpy pandas
 ```
 
 ## Input Modes
-** -i: Initial Mode for reading and processing grades from a CSV file.
--m: Merge Mode for combining grade data from an existing file and a new CSV file.
--a: Aggregation Mode for processing quiz scores, including dropping the lowest 
+
+- **Initial Mode (-i)**: Used for reading and processing grades directly from a CSV file. This mode is the starting point for grade management, where the initial set of student data is read and prepared for further processing.
+
