@@ -14,3 +14,9 @@ Welcome to the Grade Management System for CSc 144, Fall 2023. This  Python-base
 To use this system, ensure you have Python installed on your machine. Additionally, the `numpy` and `pandas` packages are required. They can be installed via pip:
 ```bash
 pip install numpy pandas
+```
+
+##Input Modes
+-i: Initial Mode for reading and processing grades from a CSV file.
+-m: Merge Mode for combining grade data from an existing file and a new CSV file.
+-a: Aggregation Mode for processing quiz scores, including dropping the lowest 
