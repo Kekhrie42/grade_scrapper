@@ -7,7 +7,6 @@ and aggregating quiz scores.
 
 Functions:
     main(): The main function to run the grade management system.
-    add_to_exceptions(): Adds students to an exception list for late homework submissions.
     aggregate_quizzes(initial_file, lowest_n, df): Aggregates quiz scores, dropping the lowest n scores.
     create_merged_file(df, filename, initial_file): Merges grade data from different sources.
     merge_data(df, existing_data): Helper function to merge data from a DataFrame and a text file.
@@ -53,19 +52,16 @@ def main():
     input_mode = input("Enter the mode: ")
     if input_mode == "-i":
         csv_file = "CSc_144_Fall_2023_grades.csv" #csv file to read
+        output_name = "output.txt" #output file name
         df, numpy_array = read_csv_file(csv_file) # read csv file function call
-        file = create_output_file(df, "output.txt") #Manipulate the data and create output file
+        file = create_output_file(df, output_name) #Manipulate the data and create output file
 
     elif input_mode == "-m":
         initial_file = "merged.txt" #initial file to merge with
         csv_file = "CSc_144_Fall_2023_grades_final_exam.csv" #csv file to read and merge
+        merged_final = "mergedFinal.txt" #output file name
         df, numpy_array = read_csv_file(csv_file) # read csv file function call
-        create_merged_file(df, "mergedFinal.txt", initial_file)
-
-    ##Not completed, 
-    #TODO
-    elif input_mode == "-e":
-        add_to_exceptions()
+        create_merged_file(df, merged_final, initial_file)
 
     elif input_mode == "-a":
         lowest_n = 4
@@ -74,20 +70,7 @@ def main():
         df, numpy_array = read_csv_file(csv_file) # read csv file function call
         aggregate_quizzes(initial_file, lowest_n, df)
 
-def add_to_exceptions():
-    # Add to exceptions dictionary
-    while True:
-        homework = input("Enter the homework number: ")
-        if homework == 'q':
-            break
-        email = input("Enter the email: ")
-        if email == 'q':
-            break
-        if homework in exceptions:
-            exceptions[homework].append(email)
-        else:
-            exceptions[homework] = [email]
-    print(exceptions)
+
 
 def aggregate_quizzes(initial_file, lowest_n, df):
     with open(initial_file, 'r') as file:
