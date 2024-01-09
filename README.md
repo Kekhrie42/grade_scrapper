@@ -1,7 +1,7 @@
 # Grade Management System for CSc 144
 
 ## Introduction
-Welcome to the Grade Management System for CSc 144, Fall 2023. This Python-based application is designed to streamline the process of managing and processing student grades. It provides functionalities such as reading grades from CSV files, merging data from various sources, handling exceptions for late submissions, and calculating aggregate quiz scores.
+Introduction to the Grade formatting System for CSc 144, Fall 2023. This Python-based application is designed to streamline the process of managing and processing student grades. It provides functionalities such as reading grades from CSV files, merging data from various sources, handling exceptions for late submissions, and calculating aggregate quiz scores.
 
 ## Features
 - **CSV File Reading**: Import student grade data from CSV files for easy management and processing.
@@ -43,10 +43,10 @@ pip install numpy pandas
 3. Set the `lowest_n` value to indicate how many of the lowest scores should be dropped.
 4. Running this mode will produce a final score file. You can set your preferred name for this output within the `-a` mode section.
 
-**Note**: Always verify the CSV format and the file paths before running each step to ensure the grade management system functions correctly.
+**Note**: Always verify the CSV format and the file paths before running each step to ensure the grade formatting functions correctly.
 
 ## Exceptions for Homeworks
-To accommodate situations where students are marked late but should not be penalized with reduced late days, the grade management system includes an `exceptions` dictionary. This dictionary provides a way to specify exceptions for individual homework assignments.
+To accommodate situations where students are marked late but should not be penalized with reduced late days, the grading formatter includes an `exceptions` dictionary. This dictionary provides a way to specify exceptions for individual homework assignments.
 
 The `exceptions` dictionary uses the homework number as the key, and the value is an array containing the email IDs of students who are exempt from late penalties for that particular homework.
 
