@@ -59,6 +59,6 @@ exceptions = {
 ```
 
 ## Missing:
-- There are two aspects of the grading program that are partially completed. The first is the meta-data dates for assignments, these have to be put on manually everytime the grading program runs and a score file is outputted. 
+- There are two aspects of the grading program that are partially completed. The first is the meta-data dates for assignments, these have to be put in manually everytime the grading program runs and a score file is outputted. 
 - The second is spacing between scores for quizzes, homeworks, and exams. 
 
