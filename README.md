@@ -5,7 +5,7 @@ Welcome to the Grade Management System for CSc 144, Fall 2023. This  Python-base
 
 ## Features
 - **CSV File Reading**: Import student grade data from CSV files for easy management and processing.
-- **Data Merging**: Seamlessly merge grade data from different sources, ensuring consistency and accuracy.
+- **Data Merging**: Merge grade data from different sources, ensuring consistency and accuracy.
 - **Late Submission Handling**: Manage exceptions for late homework submissions without manual tracking.
 - **Quiz Score Aggregation**: Automatically calculate aggregate quiz scores while allowing the exclusion of the lowest n scores.
 - **Comprehensive Output**: Generate detailed output files with student grades, including metadata and formatted score data.
