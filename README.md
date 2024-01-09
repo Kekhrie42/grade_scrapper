@@ -16,7 +16,7 @@ To use this system, ensure you have Python installed on your machine. Additional
 pip install numpy pandas
 ```
 
-##Input Modes
--i: Initial Mode for reading and processing grades from a CSV file.
+## Input Modes
+** -i: Initial Mode for reading and processing grades from a CSV file.
 -m: Merge Mode for combining grade data from an existing file and a new CSV file.
 -a: Aggregation Mode for processing quiz scores, including dropping the lowest 
