@@ -30,12 +30,12 @@ pip install numpy pandas
 2. Ensure that the CSV columns are formatted as shown in the provided screenshot, with headers: 'First Name', 'Last Name', 'SID', and 'Email'. If the format matches, proceed to the next steps. Otherwise, adjust the code within the `extract_student_data()` function accordingly.
 3. In the `main()` function, within the `-i` mode, update the `csv_file` variable to match the name of your downloaded CSV file.
 4. Execute the grading program. When prompted for an input mode, enter `-i`.
-5. The program will generate a score file. You can customize the output file's name in the `main()` function under the `-i` mode.
+5. The program will generate a score file. You can customize the output file's name in the `main()` function under the `-i` mode called `output_name`
 
 ### Merge Step:
-1. For merging, open the `main()` function and locate the `-m` mode. Set the `initial_file` variable to the name of the initial score file from the initial run.
+1. For merging, open the `main()` function and locate the `-m` mode. Set the `initial_file` variable to the name of the initial score file from the initial run (or any score file).
 2. Download the latest CSV file from Gradescope and update the `csv_file` variable in the `main()` function under `-m` mode to the new CSV file's name.
-3. This mode will output another file. You can rename this output file within the `-m` mode section.
+3. This mode will output another file. You can rename this output file within the `-m` mode section called `merged_final`.
 
 ### Aggregate Step:
 1. To aggregate quiz scores, select a pre-existing score file.
@@ -44,5 +44,8 @@ pip install numpy pandas
 4. Running this mode will produce a final score file. You can set your preferred name for this output within the `-a` mode section.
 
 **Note**: Always verify the CSV format and the file paths before running each step to ensure the grade management system functions correctly.
+
+## Exceptions for Homeworks
+In case there are students who were marked 
 
 
