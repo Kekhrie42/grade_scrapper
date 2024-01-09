@@ -46,6 +46,15 @@ pip install numpy pandas
 **Note**: Always verify the CSV format and the file paths before running each step to ensure the grade management system functions correctly.
 
 ## Exceptions for Homeworks
-In case there are students who were marked 
+To accommodate situations where students are marked late but should not be penalized with reduced late days, the grade management system includes an `exceptions` dictionary. This dictionary provides a way to specify exceptions for individual homework assignments.
+
+The `exceptions` dictionary uses the homework number as the key, and the value is an array containing the email IDs of students who are exempt from late penalties for that particular homework.
+
+### Example:
+```python
+exceptions = {
+    'Homework #2': ['abc@arizona.edu', 'def@arizona.edu'],
+    'Homework #7': ['qwe@arizona.edu']
+}
 
 
