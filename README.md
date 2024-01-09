@@ -1,7 +1,7 @@
 # Grade Management System for CSc 144
 
 ## Introduction
-Welcome to the Grade Management System for CSc 144, Fall 2023. This robust Python-based application is designed to streamline the process of managing and processing student grades. It's a versatile tool that caters to the needs of educators by providing functionalities such as reading grades from CSV files, merging data from various sources, handling exceptions for late submissions, and calculating aggregate quiz scores.
+Welcome to the Grade Management System for CSc 144, Fall 2023. This  Python-based application is designed to streamline the process of managing and processing student grades. It's a tool provides functionalities such as reading grades from CSV files, merging data from various sources, handling exceptions for late submissions, and calculating aggregate quiz scores.
 
 ## Features
 - **CSV File Reading**: Import student grade data from CSV files for easy management and processing.
