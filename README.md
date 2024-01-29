@@ -26,7 +26,7 @@ pip install numpy pandas
 ## How to Run:
 
 ### Initial Run:
-1. Download a copy of the CSV file from Gradescope, located in the assignment tab.
+1. Download a copy of the CSV file from Gradescope, located in the assignment tab. This should be the grade file, containing all of the greades of the students, not just the grade of one homework assignment.
 2. Ensure that the CSV columns are formatted as shown in the provided screenshot, with headers: 'First Name', 'Last Name', 'SID', and 'Email'. If the format matches, proceed to the next steps. Otherwise, adjust the code within the `extract_student_data()` function accordingly.
 3. In the `main()` function, within the `-i` mode, update the `csv_file` variable to match the name of your downloaded CSV file.
 4. Execute the grading program. When prompted for an input mode, enter `-i`.

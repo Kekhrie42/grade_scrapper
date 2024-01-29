@@ -1,5 +1,5 @@
 """
-Grade Management System for CSc 144, Fall 2023
+Grade Management System for CSc 144, Spring 2024
 
 This module provides functionalities for managing and processing student grades for CSc 144.
 It supports reading grades from CSV files, merging grade data, handling exceptions for late submissions,
@@ -28,38 +28,39 @@ Variables:
     exceptions (dict): Dictionary of students exempt from late homework penalties.
 
 Author:
-    Kekhrie Tsurho
+    Kekhrie Tsurho, Kevin Li
 """
 
 import numpy as np
 import pandas as pd
+import PySimpleGUI as sg
 import random
 import re
 import math
+import psg
 from datetime import datetime, timedelta
 
 
 # Exception dictionary, if a student is exempt from submitting their homework late without incurring any penalties.
 exceptions = {
-    'Homework #3': ['tubanks@arizona.edu'],
-    'Homework #4': ['iatouf@arizona.edu'], 
-    'Homework #6': ['hacube@arizona.edu']
+
 }
 
 def main():
-    
+    inVal = psg.run_gui()
+
     #Modes: Initial Mode, Merge Mode.
-    input_mode = input("Enter the mode: ")
+    input_mode = inVal[0];
     if input_mode == "-i":
-        csv_file = "CSc_144_Fall_2023_grades.csv" #csv file to read
+        csv_file = "Quiz_1_scores.csv" #csv file to read
         output_name = "output.txt" #output file name
         df, numpy_array = read_csv_file(csv_file) # read csv file function call
         file = create_output_file(df, output_name) #Manipulate the data and create output file
 
     elif input_mode == "-m":
-        initial_file = "merged.txt" #initial file to merge with
-        csv_file = "CSc_144_Fall_2023_grades_final_exam.csv" #csv file to read and merge
-        merged_final = "mergedFinal.txt" #output file name
+        initial_file = inVal[1] #initial file to merge with
+        csv_file = inVal[2] #csv file to read and merge
+        merged_final = "mergedScores.txt" #output file name
         df, numpy_array = read_csv_file(csv_file) # read csv file function call
         create_merged_file(df, merged_final, initial_file)
 
@@ -123,7 +124,7 @@ def aggregate_quizzes(initial_file, lowest_n, df):
             out_file.write(score)
 
 
-
+# TODO: EDIT INFORMATION TO REFELCT CURRENT SEMESTER
 def create_merged_file(df, filename, initial_file):
 
     # Read the existing file data (assuming it's a text file with a specific format)
@@ -134,7 +135,7 @@ def create_merged_file(df, filename, initial_file):
         #metadata
         file.write('Class: CSc 144, Discrete Math for CS I\n')
         file.write('Section: 002\n')
-        file.write('Offered: Fall,2023\n')
+        file.write('Offered: Spring, 2024\n')
         file.write('CategorySortOrder: PROG,HMWK,QUIZ,EXAM,FINL\n')
         file.write('DropLowestInTheseCategories: None\n')
         file.write('ReplaceLowExamWithFinal: Yes\n')
