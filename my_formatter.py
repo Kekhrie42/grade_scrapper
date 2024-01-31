@@ -47,29 +47,46 @@ exceptions = {
 }
 
 def main():
-    inVal = psg.run_gui()
+    #inVal = psg.run_gui()
 
-    #Modes: Initial Mode, Merge Mode.
-    input_mode = inVal[0];
-    if input_mode == "-i":
-        csv_file = "Quiz_1_scores.csv" #csv file to read
-        output_name = "output.txt" #output file name
-        df, numpy_array = read_csv_file(csv_file) # read csv file function call
-        file = create_output_file(df, output_name) #Manipulate the data and create output file
+    while True:
+        input_mode = input("Enter the usage mode: ")
+        
+        #Modes: Initial Mode, Merge Mode.
+        if input_mode == "-e":
+            break;
 
-    elif input_mode == "-m":
-        initial_file = inVal[1] #initial file to merge with
-        csv_file = inVal[2] #csv file to read and merge
-        merged_final = "mergedScores.txt" #output file name
-        df, numpy_array = read_csv_file(csv_file) # read csv file function call
-        create_merged_file(df, merged_final, initial_file)
+        elif input_mode == "-i": # Start a grade file from scratch
+            print("===== RUNNING INITIALIZATION MODE ======")
+            csv_file = input("Enter the csv file name: ")
+            output_name = input("Enter the output file name: ")
+            df, numpy_array = read_csv_file(csv_file) # read csv file function call
+            file = create_output_file(df, output_name) #Manipulate the data and create output file
+            print("===== INITIALIZATION COMPLETE ======")
 
-    elif input_mode == "-a":
-        lowest_n = 4
-        initial_file = "mergedFinal.txt" #initial file to merge with
-        csv_file = "CSc_144_Fall_2023_grades_final_exam.csv" #csv file to read and merge
-        df, numpy_array = read_csv_file(csv_file) # read csv file function call
-        aggregate_quizzes(initial_file, lowest_n, df)
+        elif input_mode == "-m":    # Merge new grades with existing grades
+            print("===== RUNNING MERGE MODE ======")
+            initial_file = input("Enter the initial score file: ") #initial file to merge with
+            csv_file = input("Enter the csv file name: ") #csv file to read and merge
+            merged_final = "mergedScores.txt" #output file name
+            df, numpy_array = read_csv_file(csv_file) # read csv file function call
+            create_merged_file(df, merged_final, initial_file)
+            print("===== MERGE COMPLETE ======")
+
+        elif input_mode == "-a":    # Aggregate quiz scores
+            print("===== RUNNING AGGREGATE MODE ======")
+            lowest_n = 4
+            initial_file = "mergedFinal.txt" #initial file to merge with
+            csv_file = "CSc_144_Fall_2023_grades_final_exam.csv" #csv file to read and merge
+            df, numpy_array = read_csv_file(csv_file) # read csv file function call
+            aggregate_quizzes(initial_file, lowest_n, df)
+
+        elif input_mode == "-x":    # Add a student to the exception list
+            print("===== RUNNING EXCEPTION MODE ======")
+            input_hw = input("Enter the homework number: ")
+            input_name = input("Enter the student's name: ")
+            exceptions[input_hw] = input_name
+            print("===== EXCEPTION ADDED ======")
 
 
 
