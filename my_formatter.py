@@ -43,7 +43,7 @@ from datetime import datetime, timedelta
 
 # Exception dictionary, if a student is exempt from submitting their homework late without incurring any penalties.
 exceptions = {
-
+    'Homework #1' : ['bwbunch@arizona.edu']
 }
 
 def main():
@@ -81,12 +81,19 @@ def main():
             df, numpy_array = read_csv_file(csv_file) # read csv file function call
             aggregate_quizzes(initial_file, lowest_n, df)
 
+        """
         elif input_mode == "-x":    # Add a student to the exception list
             print("===== RUNNING EXCEPTION MODE ======")
             input_hw = input("Enter the homework number: ")
-            input_name = input("Enter the student's name: ")
+            input_name = input("Enter the student's email: ")
             exceptions[input_hw] = input_name
             print("===== EXCEPTION ADDED ======")
+
+        elif input_mode == "-px":    # Print the exception list
+            print("===== PRINTING EXCEPTION LIST ======")
+            print(exceptions)
+            print("===== EXCEPTION LIST PRINTED ======")
+        """
 
 
 
