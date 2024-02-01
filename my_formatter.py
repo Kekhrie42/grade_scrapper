@@ -42,9 +42,7 @@ from datetime import datetime, timedelta
 
 
 # Exception dictionary, if a student is exempt from submitting their homework late without incurring any penalties.
-exceptions = {
-    'Homework #1' : ['bwbunch@arizona.edu']
-}
+exceptions = {}
 
 def main():
     #inVal = psg.run_gui()
@@ -66,11 +64,13 @@ def main():
 
         elif input_mode == "-m":    # Merge new grades with existing grades
             print("===== RUNNING MERGE MODE ======")
+            load_exceptions("exceptions.csv")
             initial_file = input("Enter the initial score file: ") #initial file to merge with
             csv_file = input("Enter the csv file name: ") #csv file to read and merge
             merged_final = "mergedScores.txt" #output file name
             df, numpy_array = read_csv_file(csv_file) # read csv file function call
             create_merged_file(df, merged_final, initial_file)
+            save_exceptions("exceptions.csv")
             print("===== MERGE COMPLETE ======")
 
         elif input_mode == "-a":    # Aggregate quiz scores
@@ -81,20 +81,25 @@ def main():
             df, numpy_array = read_csv_file(csv_file) # read csv file function call
             aggregate_quizzes(initial_file, lowest_n, df)
 
-        """
+        elif input_mode == "-sx":    # Save the exceptions
+            print("===== SAVING EXCEPTIONS =====")
+            save_exceptions("exceptions.csv")
+
+        elif input_mode == "-lx":    # Load the exceptions
+            print("===== LOADING EXCEPTIONS =====")
+            load_exceptions("exceptions.csv")
+
+        elif input_mode == "-px":    # Print the exception list
+            print("===== PRINTING EXCEPTION LIST ======")
+            print(exceptions)
+            print("===== EXCEPTION LIST PRINTED ======")
+
         elif input_mode == "-x":    # Add a student to the exception list
             print("===== RUNNING EXCEPTION MODE ======")
             input_hw = input("Enter the homework number: ")
             input_name = input("Enter the student's email: ")
             exceptions[input_hw] = input_name
             print("===== EXCEPTION ADDED ======")
-
-        elif input_mode == "-px":    # Print the exception list
-            print("===== PRINTING EXCEPTION LIST ======")
-            print(exceptions)
-            print("===== EXCEPTION LIST PRINTED ======")
-        """
-
 
 
 def aggregate_quizzes(initial_file, lowest_n, df):
@@ -148,7 +153,6 @@ def aggregate_quizzes(initial_file, lowest_n, df):
             out_file.write(score)
 
 
-# TODO: EDIT INFORMATION TO REFELCT CURRENT SEMESTER
 def create_merged_file(df, filename, initial_file):
 
     # Read the existing file data (assuming it's a text file with a specific format)
@@ -183,6 +187,7 @@ def create_merged_file(df, filename, initial_file):
         
         for line in merged_data_lines:
             file.write(line)
+
 
 def merge_data(df, existing_data):
     merged_data = []
@@ -340,6 +345,7 @@ def populate_scores(dict_scores, scores):
         scores.extend(dict_scores[key])
     return scores
 
+
 def populate_quizzes(dict_scores, scores, df):
     last_quiz_index = 2  # Starting index for quizzes in the scores list
     for i in range(number_of_quizzes(df)):
@@ -349,6 +355,7 @@ def populate_quizzes(dict_scores, scores, df):
         else:
             dict_scores['quizzes'].append('0')
     return last_quiz_index
+
 
 def populate_homeworks(dict_scores, scores, df, start):
     # Score range for homeworks - assuming homework scores have a known range
@@ -369,6 +376,7 @@ def populate_homeworks(dict_scores, scores, df, start):
     for _ in range(number_of_homeworks(df) - hw_count):
         dict_scores['homeworks'].append('0')
     return start + hw_count
+
 
 def populate_exams(dict_scores, scores, df, start):
     # Calculate the remaining space available for exam scores
@@ -603,4 +611,16 @@ def extract_student_data(df, row):
     data_points_str = ' '.join(data_points)
 
     return f"{meta_data}\n{data_points_str}\n"
+
+def load_exceptions(filename):
+    with open(filename, 'r') as f:
+        for line in f:
+            parts = line.strip().split(',')
+            exceptions[parts[0] ] = parts[1:]
+
+def save_exceptions(filename):
+    with open(filename, 'w') as f:
+        for row in exceptions:
+            f.write(row +','+','.join(exceptions[row])+"\n")
+
 main()
