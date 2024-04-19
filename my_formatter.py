@@ -50,8 +50,8 @@ def main():
     while True:
         input_mode = input("Enter the usage mode: ")
         
-        #Modes: Initial Mode, Merge Mode.
-        if input_mode == "-e":
+        #Modes: Initial Mode, Merge Mode, Quiz Aggregate Mode.
+        if input_mode == "-e": # Exit the program
             break;
 
         elif input_mode == "-i": # Start a grade file from scratch
@@ -67,7 +67,7 @@ def main():
             load_exceptions("exceptions.csv")
             initial_file = input("Enter the initial score file: ") #initial file to merge with
             csv_file = input("Enter the csv file name: ") #csv file to read and merge
-            merged_final = "mergedScores.txt" #output file name
+            merged_final = input("Enter the output file name: ") #output file name
             df, numpy_array = read_csv_file(csv_file) # read csv file function call
             create_merged_file(df, merged_final, initial_file)
             save_exceptions("exceptions.csv")
@@ -81,6 +81,7 @@ def main():
             df, numpy_array = read_csv_file(csv_file) # read csv file function call
             aggregate_quizzes(initial_file, lowest_n, df)
 
+        # STUDENT EXCEPTION HANDLING MODES
         elif input_mode == "-sx":    # Save the exceptions
             print("===== SAVING EXCEPTIONS =====")
             save_exceptions("exceptions.csv")
@@ -100,6 +101,19 @@ def main():
             input_name = input("Enter the student's email: ")
             exceptions[input_hw] = input_name
             print("===== EXCEPTION ADDED ======")
+        
+        # TODO: Add mode that allows user to add students to withdraw list.
+        elif input_mode == "-sw":
+            print("===== RUNNING SAVE WITHDRAW LIST MODE ======")
+            print("===== SAVE WITHDRAW MODE COMPLETE ======")
+        
+        elif input_mode == "-pw":
+            print("===== PRINTING WITHDRAW LIST ======")
+            withdraw = load_withdrawn_students("withdrawn_students.csv")
+            for student in withdraw:
+                print(student)
+            print("===== WITHDRAW LIST PRINTED ======")
+
 
 
 def aggregate_quizzes(initial_file, lowest_n, df):
@@ -190,6 +204,7 @@ def create_merged_file(df, filename, initial_file):
 
 
 def merge_data(df, existing_data):
+    withdrawn = load_withdrawn_students("withdrawn_students.csv")
     merged_data = []
     start_merging = False
     late_threshold = timedelta(minutes=6) ##Late day time threshold
@@ -207,7 +222,17 @@ def merge_data(df, existing_data):
                 netID = str(parts[2]).strip()  # Assuming the netID is in the third column
                 constructed_email = f"{netID}@arizona.edu"
                 constructed_email_alternative = f"{netID}@email.arizona.edu"
-
+                
+                """
+                for withdrawn_student in withdrawn:
+                    status = 'C'
+                    if netID in withdrawn_student:
+                        status = 'W'
+                        break
+                
+                line = parts[:-2] + [status] + parts[-1:]
+                """
+                
                 if (constructed_email in df['Email'].values) or (constructed_email_alternative in df['Email'].values):
 
                         if constructed_email_alternative in df['Email'].values:
@@ -409,7 +434,6 @@ def number_of_homeworks(df):
 def number_of_exams(df):
     return sum(1 for i in range(1, 4) if f'Exam #{i}' in df.columns)
 
-
 def number_of_final_exam(df):
     return sum(1 if 'Final Exam' in df.columns else 0)
 
@@ -536,6 +560,15 @@ def extract_student_data(df, row):
     # Extract the meta-data, name, SID, status, and 6-Digit ID
     random_number = random.randint(100000, 999999)
     status = 'C'
+    
+    # Check if the student has withdrawn from the class, assign status 'W' if withdrawn otherwise 'C'
+    withdraw_students = load_withdrawn_students("withdrawn_students.csv")
+    if 'Email' in df.columns:
+        identifier = row['Email']
+    else:
+        identifier = row['NetID']
+    
+    status = 'W' if identifier in withdraw_students else 'C'
 
     StudentGivenName = 16  # specify the maximum length for first and middle names
     StudentFamilyName = 17  # specify the maximum length for last name
@@ -622,5 +655,12 @@ def save_exceptions(filename):
     with open(filename, 'w') as f:
         for row in exceptions:
             f.write(row +','+','.join(exceptions[row])+"\n")
+
+def load_withdrawn_students(filename):
+    withdrawn_students = set()
+    with open(filename, 'r') as file:
+        for line in file:
+            withdrawn_students.add(line.strip())
+    return withdrawn_students
 
 main()
