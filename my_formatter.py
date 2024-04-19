@@ -1,5 +1,5 @@
 """
-Grade Management System for CSc 144, Fall 2023
+Grade Management System for CSc 144, Spring 2024
 
 This module provides functionalities for managing and processing student grades for CSc 144.
 It supports reading grades from CSV files, merging grade data, handling exceptions for late submissions,
@@ -28,45 +28,94 @@ Variables:
     exceptions (dict): Dictionary of students exempt from late homework penalties.
 
 Author:
-    Kekhrie Tsurho
+    Kekhrie Tsurho, Kevin Li
 """
 
 import numpy as np
 import pandas as pd
+import PySimpleGUI as sg
 import random
 import re
 import math
+import psg
 from datetime import datetime, timedelta
 
 
 # Exception dictionary, if a student is exempt from submitting their homework late without incurring any penalties.
+
 exceptions = {
 
 }
 
 def main():
-    
-    #Modes: Initial Mode, Merge Mode.
-    input_mode = input("Enter the mode: ")
-    if input_mode == "-i":
-        csv_file = "CSc_144_Fall_2023_grades.csv" #csv file to read
-        output_name = "output.txt" #output file name
-        df, numpy_array = read_csv_file(csv_file) # read csv file function call
-        file = create_output_file(df, output_name) #Manipulate the data and create output file
+    #inVal = psg.run_gui()
 
-    elif input_mode == "-m":
-        initial_file = "merged.txt" #initial file to merge with
-        csv_file = "CSc_144_Fall_2023_grades_final_exam.csv" #csv file to read and merge
-        merged_final = "mergedFinal.txt" #output file name
-        df, numpy_array = read_csv_file(csv_file) # read csv file function call
-        create_merged_file(df, merged_final, initial_file)
+    while True:
+        input_mode = input("Enter the usage mode: ")
+        
+        #Modes: Initial Mode, Merge Mode, Quiz Aggregate Mode.
+        if input_mode == "-e": # Exit the program
+            break;
 
-    elif input_mode == "-a":
-        lowest_n = 4
-        initial_file = "mergedFinal.txt" #initial file to merge with
-        csv_file = "CSc_144_Fall_2023_grades_final_exam.csv" #csv file to read and merge
-        df, numpy_array = read_csv_file(csv_file) # read csv file function call
-        aggregate_quizzes(initial_file, lowest_n, df)
+        elif input_mode == "-i": # Start a grade file from scratch
+            print("===== RUNNING INITIALIZATION MODE ======")
+            csv_file = input("Enter the csv file name: ")
+            output_name = input("Enter the output file name: ")
+            df, numpy_array = read_csv_file(csv_file) # read csv file function call
+            file = create_output_file(df, output_name) #Manipulate the data and create output file
+            print("===== INITIALIZATION COMPLETE ======")
+
+        elif input_mode == "-m":    # Merge new grades with existing grades
+            print("===== RUNNING MERGE MODE ======")
+            load_exceptions("exceptions.csv")
+            initial_file = input("Enter the initial score file: ") #initial file to merge with
+            csv_file = input("Enter the csv file name: ") #csv file to read and merge
+            merged_final = input("Enter the output file name: ") #output file name
+            df, numpy_array = read_csv_file(csv_file) # read csv file function call
+            create_merged_file(df, merged_final, initial_file)
+            save_exceptions("exceptions.csv")
+            print("===== MERGE COMPLETE ======")
+
+        elif input_mode == "-a":    # Aggregate quiz scores
+            print("===== RUNNING AGGREGATE MODE ======")
+            lowest_n = 4
+            initial_file = "mergedFinal.txt" #initial file to merge with
+            csv_file = "CSc_144_Fall_2023_grades_final_exam.csv" #csv file to read and merge
+            df, numpy_array = read_csv_file(csv_file) # read csv file function call
+            aggregate_quizzes(initial_file, lowest_n, df)
+
+        # STUDENT EXCEPTION HANDLING MODES
+        elif input_mode == "-sx":    # Save the exceptions
+            print("===== SAVING EXCEPTIONS =====")
+            save_exceptions("exceptions.csv")
+
+        elif input_mode == "-lx":    # Load the exceptions
+            print("===== LOADING EXCEPTIONS =====")
+            load_exceptions("exceptions.csv")
+
+        elif input_mode == "-px":    # Print the exception list
+            print("===== PRINTING EXCEPTION LIST ======")
+            print(exceptions)
+            print("===== EXCEPTION LIST PRINTED ======")
+
+        elif input_mode == "-x":    # Add a student to the exception list
+            print("===== RUNNING EXCEPTION MODE ======")
+            input_hw = input("Enter the homework number: ")
+            input_name = input("Enter the student's email: ")
+            exceptions[input_hw] = input_name
+            print("===== EXCEPTION ADDED ======")
+        
+        # TODO: Add mode that allows user to add students to withdraw list.
+        elif input_mode == "-sw":
+            print("===== RUNNING SAVE WITHDRAW LIST MODE ======")
+            print("===== SAVE WITHDRAW MODE COMPLETE ======")
+        
+        elif input_mode == "-pw":
+            print("===== PRINTING WITHDRAW LIST ======")
+            withdraw = load_withdrawn_students("withdrawn_students.csv")
+            for student in withdraw:
+                print(student)
+            print("===== WITHDRAW LIST PRINTED ======")
 
 
 
@@ -121,7 +170,6 @@ def aggregate_quizzes(initial_file, lowest_n, df):
             out_file.write(score)
 
 
-
 def create_merged_file(df, filename, initial_file):
 
     # Read the existing file data (assuming it's a text file with a specific format)
@@ -132,7 +180,7 @@ def create_merged_file(df, filename, initial_file):
         #metadata
         file.write('Class: CSc 144, Discrete Math for CS I\n')
         file.write('Section: 002\n')
-        file.write('Offered: Fall,2023\n')
+        file.write('Offered: Spring, 2024\n')
         file.write('CategorySortOrder: PROG,HMWK,QUIZ,EXAM,FINL\n')
         file.write('DropLowestInTheseCategories: None\n')
         file.write('ReplaceLowExamWithFinal: Yes\n')
@@ -157,7 +205,9 @@ def create_merged_file(df, filename, initial_file):
         for line in merged_data_lines:
             file.write(line)
 
+
 def merge_data(df, existing_data):
+    withdrawn = load_withdrawn_students("withdrawn_students.csv")
     merged_data = []
     start_merging = False
     late_threshold = timedelta(minutes=6) ##Late day time threshold
@@ -175,7 +225,17 @@ def merge_data(df, existing_data):
                 netID = str(parts[2]).strip()  # Assuming the netID is in the third column
                 constructed_email = f"{netID}@arizona.edu"
                 constructed_email_alternative = f"{netID}@email.arizona.edu"
-
+                
+                """
+                for withdrawn_student in withdrawn:
+                    status = 'C'
+                    if netID in withdrawn_student:
+                        status = 'W'
+                        break
+                
+                line = parts[:-2] + [status] + parts[-1:]
+                """
+                
                 if (constructed_email in df['Email'].values) or (constructed_email_alternative in df['Email'].values):
 
                         if constructed_email_alternative in df['Email'].values:
@@ -313,6 +373,7 @@ def populate_scores(dict_scores, scores):
         scores.extend(dict_scores[key])
     return scores
 
+
 def populate_quizzes(dict_scores, scores, df):
     last_quiz_index = 2  # Starting index for quizzes in the scores list
     for i in range(number_of_quizzes(df)):
@@ -322,6 +383,7 @@ def populate_quizzes(dict_scores, scores, df):
         else:
             dict_scores['quizzes'].append('0')
     return last_quiz_index
+
 
 def populate_homeworks(dict_scores, scores, df, start):
     # Score range for homeworks - assuming homework scores have a known range
@@ -342,6 +404,7 @@ def populate_homeworks(dict_scores, scores, df, start):
     for _ in range(number_of_homeworks(df) - hw_count):
         dict_scores['homeworks'].append('0')
     return start + hw_count
+
 
 def populate_exams(dict_scores, scores, df, start):
     # Calculate the remaining space available for exam scores
@@ -373,7 +436,6 @@ def number_of_homeworks(df):
 
 def number_of_exams(df):
     return sum(1 for i in range(1, 4) if f'Exam #{i}' in df.columns)
-
 
 def number_of_final_exam(df):
     return sum(1 if 'Final Exam' in df.columns else 0)
@@ -501,6 +563,15 @@ def extract_student_data(df, row):
     # Extract the meta-data, name, SID, status, and 6-Digit ID
     random_number = random.randint(100000, 999999)
     status = 'C'
+    
+    # Check if the student has withdrawn from the class, assign status 'W' if withdrawn otherwise 'C'
+    withdraw_students = load_withdrawn_students("withdrawn_students.csv")
+    if 'Email' in df.columns:
+        identifier = row['Email']
+    else:
+        identifier = row['NetID']
+    
+    status = 'W' if identifier in withdraw_students else 'C'
 
     StudentGivenName = 16  # specify the maximum length for first and middle names
     StudentFamilyName = 17  # specify the maximum length for last name
@@ -576,4 +647,23 @@ def extract_student_data(df, row):
     data_points_str = ' '.join(data_points)
 
     return f"{meta_data}\n{data_points_str}\n"
+
+def load_exceptions(filename):
+    with open(filename, 'r') as f:
+        for line in f:
+            parts = line.strip().split(',')
+            exceptions[parts[0] ] = parts[1:]
+
+def save_exceptions(filename):
+    with open(filename, 'w') as f:
+        for row in exceptions:
+            f.write(row +','+','.join(exceptions[row])+"\n")
+
+def load_withdrawn_students(filename):
+    withdrawn_students = set()
+    with open(filename, 'r') as file:
+        for line in file:
+            withdrawn_students.add(line.strip())
+    return withdrawn_students
+
 main()

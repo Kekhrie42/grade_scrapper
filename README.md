@@ -26,11 +26,12 @@ pip install numpy pandas
 ## How to Run:
 
 ### Initial Run:
-1. Download a copy of the CSV file from Gradescope, located in the assignment tab.
+1. Download a copy of the CSV file from Gradescope, located in the assignment tab. This should be the grade file, containing all of the greades of the students, not just the grade of one homework assignment.
 2. Ensure that the CSV columns are formatted as shown in the provided screenshot, with headers: 'First Name', 'Last Name', 'SID', and 'Email'. If the format matches, proceed to the next steps. Otherwise, adjust the code within the `extract_student_data()` function accordingly.
 3. In the `main()` function, within the `-i` mode, update the `csv_file` variable to match the name of your downloaded CSV file.
 4. Execute the grading program. When prompted for an input mode, enter `-i`.
 5. The program will generate a score file. You can customize the output file's name in the `main()` function under the `-i` mode called `output_name`
+#### IMPORTANT: You should only run initial once at the start of the semester. This mode generates the random unique 6 digit integer idenitfiers for each student. If you run this a second time a new set of identifiers will be generated.
 
 ### Merge Step:
 1. For merging, open the `main()` function and locate the `-m` mode. Set the `initial_file` variable to the name of the initial score file from the initial run (or any score file).
@@ -61,4 +62,5 @@ exceptions = {
 ## Missing:
 - There are two aspects of the grading program that are partially completed. The first is the meta-data dates for assignments, these have to be put in manually everytime the grading program runs and a score file is outputted. 
 - The second is spacing between scores for quizzes, homeworks, and exams. 
+- TODO: Add code that handles withdrawn students so their status appears as 'W' rather than 'C'
 
