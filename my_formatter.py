@@ -41,9 +41,7 @@ from datetime import datetime, timedelta
 
 # Exception dictionary, if a student is exempt from submitting their homework late without incurring any penalties.
 exceptions = {
-    'Homework #3': ['tubanks@arizona.edu'],
-    'Homework #4': ['iatouf@arizona.edu'], 
-    'Homework #6': ['hacube@arizona.edu']
+
 }
 
 def main():
