@@ -42,7 +42,10 @@ from datetime import datetime, timedelta
 
 
 # Exception dictionary, if a student is exempt from submitting their homework late without incurring any penalties.
-exceptions = {}
+
+exceptions = {
+
+}
 
 def main():
     #inVal = psg.run_gui()
